@@ -1,0 +1,6 @@
+{
+      "files.associations": {
+            "*.yarnproject": "jsonc",
+            "nu32dip.h": "c"
+      }
+}

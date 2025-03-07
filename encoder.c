@@ -10,15 +10,15 @@ volatile int pos = 0;
 volatile int newPosFlag = 0;
 
 int get_encoder_flag(){
-    return newPosFlag;
+  return newPosFlag;
 }
 
 void set_encoder_flag(int f){
-    newPosFlag = f;
+  newPosFlag = f;
 }
 
 int get_encoder_count(){
-    return pos;
+  return pos;
 }
 
 void __ISR(_UART_2_VECTOR, IPL7SOFT) U2ISR(void) { 

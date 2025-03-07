@@ -8,6 +8,7 @@ int main() {
       NU32DIP_Startup();
       NU32DIP_GREEN = 1; // turn off the LEDs
       NU32DIP_YELLOW = 1;
+      UART2_Startup();
       __builtin_disable_interrupts();
       // initialize modules or peripherals here ...
       __builtin_enable_interrupts();
@@ -16,13 +17,14 @@ int main() {
             NU32DIP_ReadUART1(buffer, BUF_SIZE); // next character expect menu command
             NU32DIP_GREEN = 1;
             switch (buffer[0]) {
-                  /* 28.4.5
-                  case 'c': {
-                        sprintf(buffer, "%d", encoder_counts());
+                  case 'c': { // read encoder count
+                        WriteUART2("a"); // 'a' print back encoder count as an integer with a newline
+                        while(!get_encoder_flag()) {;} // wait for get_encoder_flag to return 1
+                        set_encoder_flag(0); // clear flag
+                        sprintf(buffer, "%d\r\n", get_encoder_count()); // store in buffer
                         NU32DIP_WriteUART1(buffer); // send encoder count to client
                         break;
                   }
-                  */
                   case 'd': { // dummy command
                         int n = 0;
                         NU32DIP_ReadUART1(buffer, BUF_SIZE);
@@ -32,7 +34,8 @@ int main() {
                         break;
                   }
                   case 'e': { // reset encoder
-                        
+                        WriteUART2("b"); // reset encoder count, no reply
+                        break;
                   }
                   case 'q': { 
                         // hangle q for quit
