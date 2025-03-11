@@ -4,7 +4,7 @@
 # python3 -m pip install pyserial
 # sudo apt-get install python3-matplotlib
 
-modes = ["IDLE","PWM","ITEST","HOLD","TRACK"]
+modes = ["IDLE","PWM","ITEST","HOLD","TRACK"] # helps with printing the mode
 
 import serial
 ser = serial.Serial('COM3',230400)
@@ -34,16 +34,7 @@ while not has_quit:
     
     # take the appropriate action
     # there is no switch() in python, using if elif instead
-    if (selection == 'a'):
-        # example operation
-        # n_str = input('Enter number: ') # get the number to send
-        # n_int = int(n_str) # turn it into an int
-        # print('number = ' + str(n_int)) # print it to the screen to double check
-
-        # ser.write((str(n_int)+'\n').encode()); # send the number
-        # n_str = ser.read_until(b'\n');  # get the incremented number back
-        # n_int = int(n_str) # turn it into an int
-        # print('Got back: ' + str(n_int) + '\n') # print it to the screen
+    if (selection == 'a'): # read current sensor (adc counts)
         print('The motor current is ' + str(number) + ' ADC counts.\n')
     elif (selection == 'b'):
         print('The motor current is ' + str(number) + ' mA.\n') # TO FIX
@@ -54,9 +45,8 @@ while not has_quit:
     elif (selection == 'd'):
         n_str = ser.read_until(b'\n')
         num = float(n_str)
-        print('The motor angle is ' + str(num) + ' degrees.\n') # TO FIX
+        print('The motor angle is ' + str(num) + ' degrees.\n')
     elif (selection == 'e'):
-        # to fix, no output
         print(' ')
     elif (selection == 'f'):
         pwmvalstr = input('\nWhat PWM value would you like [-100 to 100]? ') # duty cycle
