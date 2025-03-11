@@ -4,6 +4,8 @@
 # python3 -m pip install pyserial
 # sudo apt-get install python3-matplotlib
 
+modes = ["IDLE","PWM","ITEST","HOLD","TRACK"]
+
 import serial
 ser = serial.Serial('COM3',230400)
 print('Opening port: ')
@@ -14,15 +16,15 @@ has_quit = False
 while not has_quit:
     print('PIC32 MOTOR DRIVER INTERFACE')
     # display the menu options; this list will grow
-    print('\ta: Read current sensor (ADC counts) \tb: Read current sensor (mA)') # '\t' is a tab
-    print('\tc: Read encoder (counts) \td: Read encoder (deg)') 
-    print('\te: Reset encoder \tf: Set PWM (-100 to 100)') 
-    print('\tg: Set current gains \th: Get current gains') 
-    print('\ti: Set position gains \tj: Get position gains')
-    print('\tk: Test current control \tl: Go to angle (deg)')
-    print('\tm: Load step trajectory \tn: Load cubic trajectory') 
-    print('\to: Execute trajectory \tp: Unpower the motor') 
-    print('\tq: Quit client \tr: Get mode')
+    print('\ta: Read current sensor (ADC counts)\tb: Read current sensor (mA)') # '\t' is a tab
+    print('\tc: Read encoder (counts)\t\td: Read encoder (deg)') 
+    print('\te: Reset encoder\t\t\tf: Set PWM (-100 to 100)') 
+    print('\tg: Set current gains\t\t\th: Get current gains') 
+    print('\ti: Set position gains\t\t\tj: Get position gains')
+    print('\tk: Test current control\t\t\tl: Go to angle (deg)')
+    print('\tm: Load step trajectory\t\t\tn: Load cubic trajectory') 
+    print('\to: Execute trajectory\t\t\tp: Unpower the motor') 
+    print('\tq: Quit client\t\t\t\tr: Get mode')
     # read the user's choice
     selection = input('\nENTER COMMAND: ')
     selection_endline = selection+'\n'
@@ -34,36 +36,28 @@ while not has_quit:
     # there is no switch() in python, using if elif instead
     if (selection == 'a'):
         # example operation
-        n_str = input('Enter number: ') # get the number to send
-        n_int = int(n_str) # turn it into an int
-        print('number = ' + str(n_int)) # print it to the screen to double check
+        # n_str = input('Enter number: ') # get the number to send
+        # n_int = int(n_str) # turn it into an int
+        # print('number = ' + str(n_int)) # print it to the screen to double check
 
-        ser.write((str(n_int)+'\n').encode()); # send the number
-        n_str = ser.read_until(b'\n');  # get the incremented number back
-        n_int = int(n_str) # turn it into an int
-        print('Got back: ' + str(n_int) + '\n') # print it to the screen
-        # print('The motor current is ' + str(number) + ' ADC counts.\n')
+        # ser.write((str(n_int)+'\n').encode()); # send the number
+        # n_str = ser.read_until(b'\n');  # get the incremented number back
+        # n_int = int(n_str) # turn it into an int
+        # print('Got back: ' + str(n_int) + '\n') # print it to the screen
+        print('The motor current is ' + str(number) + ' ADC counts.\n')
     elif (selection == 'b'):
         print('The motor current is ' + str(number) + ' mA.\n') # TO FIX
     elif (selection == 'c'):
         n_str = ser.read_until(b'\n')
         num = int(n_str)
-        print('The motor angle is ' + n_str + ' counts.\n') # TO FIX
+        print('The motor angle is ' + str(num) + ' counts.\n')
     elif (selection == 'd'):
-        # example operation
-        n_str = input('Enter number: ') # get the number to send
-        n_int = int(n_str) # turn it into an int
-        print('number = ' + str(n_int)) # print it to the screen to double check
-
-        ser.write((str(n_int)+'\n').encode()); # send the number
-        n_str = ser.read_until(b'\n');  # get the incremented number back
-        n_int = int(n_str) # turn it into an int
-        print('Got back: ' + str(n_int) + '\n') # print it to the screen
-        # print('The motor current is ' + str(number) + ' ADC counts.\n')
-        # print('The motor angle is ' + str(number) + ' degrees.\n') # TO FIX
+        n_str = ser.read_until(b'\n')
+        num = float(n_str)
+        print('The motor angle is ' + str(num) + ' degrees.\n') # TO FIX
     elif (selection == 'e'):
         # to fix, no output
-        print("")
+        print(' ')
     elif (selection == 'f'):
         pwmvalstr = input('\nWhat PWM value would you like [-100 to 100]? ') # duty cycle
         pwmval = int(pwmvalstr) # turn into int
@@ -110,7 +104,9 @@ while not has_quit:
         # be sure to close the port
         ser.close()
     elif (selection == 'r'):
-        print(f'The PIC32 controller mode is currently {current_mode}.')
+        n_str = ser.read_until(b'\n');  # get the incremented number back
+        n_int = int(n_str) # turn it into an int
+        print('The PIC32 controller mode is currently ' + str(modes[n_int])+'.\n')
     else:
         print('Invalid Selection ' + selection_endline)
 
