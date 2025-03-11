@@ -8,8 +8,9 @@ int main() {
       NU32DIP_Startup();
       NU32DIP_GREEN = 1; // turn off the LEDs
       NU32DIP_YELLOW = 1;
-      UART2_Startup();
+      // INA219_Startup(); 
       __builtin_disable_interrupts();
+      UART2_Startup();
       // initialize modules or peripherals here ...
       __builtin_enable_interrupts();
 
@@ -21,8 +22,10 @@ int main() {
                         WriteUART2("a"); // 'a' print back encoder count as an integer with a newline
                         while(!get_encoder_flag()) {;} // wait for get_encoder_flag to return 1
                         set_encoder_flag(0); // clear flag
-                        sprintf(buffer, "%d\r\n", get_encoder_count()); // store in buffer
-                        NU32DIP_WriteUART1(buffer); // send encoder count to client
+                        char m[50];
+                        int p = get_encoder_count();
+                        sprintf(m, "%d\r\n",p);
+                        NU32DIP_WriteUART1(m); // send encoder count to client
                         break;
                   }
                   case 'd': { // dummy command
