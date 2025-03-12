@@ -55,6 +55,7 @@ while not has_quit:
     elif (selection == 'f'):
         pwmvalstr = input('\nWhat PWM value would you like [-100 to 100]? ') # duty cycle
         pwmval = int(pwmvalstr) # turn into int
+        ser.write((str(pwmval)+'\n').encode()) # send the number
         if (pwmval < 0) :
             direction = "clockwise"
             pwmval = -1*pwmval

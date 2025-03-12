@@ -4,6 +4,7 @@
             "nu32dip.h": "c",
             "utilities.h": "c",
             "stdio.h": "c",
-            "util.h": "c"
+            "util.h": "c",
+            "currcontrol.h": "c"
       }
 }

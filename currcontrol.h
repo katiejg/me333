@@ -1,7 +1,6 @@
 // This module implements the 5 kHz current control loop. It owns a timer
-// to implement the fxed-frequency control loop, an output compare and another timer to
+// to implement the fixed-frequency control loop, an output compare and another timer to
 // implement a PWM signal to the H-bridge, and one digital output controlling the motor’s
-// A Motor Control Project 469
 // direction (see the description of the DRV8835 in Chapter 27). Depending on the PIC32
 // operating mode, the current controller either brakes the motor (IDLE mode), implements
 // a constant PWM (PWM mode), uses the current control gains to try to provide a current specifed by the position controller (HOLD or TRACK mode), or uses the current control
@@ -20,5 +19,7 @@
 #include "NU32DIP.h"
 
 // function headers go here
+void initTimer5();
+void initPWMT2OC();
 
 #endif // CC__H__

@@ -2,15 +2,17 @@
 #include "util.h"
 #include "ina219.h"
 #include "encoder.h"
+#include "currcontrol.h"
 
 #define BUF_SIZE 200
 
 int read_encoder()
 {
       WriteUART2("a"); // 'a' print back encoder count as an integer with a newline
-      while (!get_encoder_flag()) {
+      while (!get_encoder_flag())
+      {
             ;
-      }                    // wait for get_encoder_flag to return 1
+      } // wait for get_encoder_flag to return 1
       set_encoder_flag(0); // clear flag
       int p = get_encoder_count();
       return p;
@@ -36,8 +38,8 @@ int main()
             NU32DIP_GREEN = 1;
             switch (buffer[0])
             {
-            case 'a': 
-            { // read current sensor adc counts
+            case 'a':
+            {                                     // read current sensor adc counts
                   short count = readINA219(0x04); // FIX: double-check this
                   sprintf(m, "%d\r\n", count);
                   NU32DIP_WriteUART1(m); // send adc count to client
@@ -68,6 +70,15 @@ int main()
             case 'e':
             {                      // reset encoder
                   WriteUART2("b"); // reset encoder count, no reply
+                  break;
+            }
+            case 'f':
+            {
+                  int p = 0;
+                  NU32DIP_ReadUART1(buffer, BUF_SIZE);
+                  sscanf(buffer, "%d", &p);
+                  sprintf(buffer, "%d\r\n", p + 1); // return the number + 1
+                  NU32DIP_WriteUART1(buffer);
                   break;
             }
             case 'p':
