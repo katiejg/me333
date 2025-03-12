@@ -35,9 +35,13 @@ while not has_quit:
     # take the appropriate action
     # there is no switch() in python, using if elif instead
     if (selection == 'a'): # read current sensor (adc counts)
-        print('The motor current is ' + str(number) + ' ADC counts.\n')
+        n_str = ser.read_until(b'\n')
+        num = int(n_str)
+        print('The motor current is ' + str(num) + ' ADC counts.\n')
     elif (selection == 'b'):
-        print('The motor current is ' + str(number) + ' mA.\n') # TO FIX
+        n_str = ser.read_until(b'\n')
+        num = float(n_str)
+        print('The motor current is ' + str(num) + ' mA.\n')
     elif (selection == 'c'):
         n_str = ser.read_until(b'\n')
         num = int(n_str)
