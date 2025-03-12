@@ -17,8 +17,10 @@
 #include <sys/attribs.h> // __ISR macro
 
 #include "NU32DIP.h"
+#include "util.h"
 
 // function headers go here
+void __ISR(_TIMER_5_VECTOR, IPL5SOFT) Controller(void);
 void initTimer5();
 void initPWMT2OC();
 
