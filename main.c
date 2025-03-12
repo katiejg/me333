@@ -38,16 +38,16 @@ int main()
             {
             case 'a': 
             { // read current sensor adc counts
-                  int count = readINA219(0x04);
+                  short count = readINA219(0x04); // FIX: double-check this
                   sprintf(m, "%d\r\n", count);
-                  NU32DIP_WriteUART1(m); // send encoder count to client
+                  NU32DIP_WriteUART1(m); // send adc count to client
                   break;
             }
             case 'b':
             { // read current sensor mA
                   float current = INA219_read_current();
-                  sprintf(m, "%f\r\n", current);
-                  NU32DIP_WriteUART1(m); // send encoder count to client
+                  sprintf(m, "%.1f\r\n", current);
+                  NU32DIP_WriteUART1(m); // send amp count to client
                   break;
             }
             case 'c':
