@@ -92,7 +92,7 @@ while not has_quit:
     elif (selection == 'o'):
         print('Exiting client')
     elif (selection == 'p'): # Switch to IDLE mode
-        print('Exiting client')
+        print('Switching to IDLE mode')
     elif (selection == 'q'):
         print('Exiting client')
         has_quit = True; # exit client

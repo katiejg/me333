@@ -77,11 +77,14 @@ int main()
                   int p = 0;
                   NU32DIP_ReadUART1(buffer, BUF_SIZE);
                   sscanf(buffer, "%d", &p);
-                  sprintf(buffer, "%d\r\n", p + 1); // return the number + 1
-                  NU32DIP_WriteUART1(buffer);
+                  if (p < 0) { // clockwise
+                        set_duty_cycle(-1*p,1);
+                  } else { // counterclockwise
+                        set_duty_cycle(p,0);
+                  }
                   break;
             }
-            case 'p':
+            case 'p': // Unpower the motor
             {
                   set_mode(IDLE);
                   break;
