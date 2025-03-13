@@ -1,4 +1,5 @@
 #include "nu32dip.h"
+#include <stdio.h>
 #include "util.h"
 #include "ina219.h"
 #include "encoder.h"
@@ -30,6 +31,8 @@ int main()
       set_mode(IDLE);
       __builtin_disable_interrupts();
       // initialize modules or peripherals here ...
+      initTimer5();
+      initPWMT2OC();
       __builtin_enable_interrupts();
 
       while (1)
@@ -74,14 +77,15 @@ int main()
             }
             case 'f':
             {
-                  int p = 0;
+                  int pf = 0;
                   NU32DIP_ReadUART1(buffer, BUF_SIZE);
-                  sscanf(buffer, "%d", &p);
-                  if (p < 0) { // clockwise
-                        set_duty_cycle(-1*p,1);
+                  sscanf(buffer, "%d", &pf);
+                  if (pf < 0) { // clockwise
+                        set_duty_cycle(-1*pf,1);
                   } else { // counterclockwise
-                        set_duty_cycle(p,0);
+                        set_duty_cycle(pf,0);
                   }
+                  set_mode(PWM);
                   break;
             }
             case 'p': // Unpower the motor
@@ -91,8 +95,8 @@ int main()
             }
             case 'r':
             {
-                  enum Mode curr_mode = get_mode();
-                  sprintf(m, "%d\r\n", curr_mode); // return the number + 1
+                  enum Mode currmode = get_mode();
+                  sprintf(m, "%d\r\n", (int)currmode);
                   NU32DIP_WriteUART1(m);
                   break;
             }

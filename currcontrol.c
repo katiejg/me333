@@ -1,16 +1,20 @@
 #include "currcontrol.h"
+#include "util.h"
+
+#define DIGOUTLAT LATBbits.LATB15
+#define DIGOUTTRIS TRISBbits.TRISB15
 
 volatile float duty_cycle = 0.25;
 volatile int direction = 0;
 
-// clockwise = negative
-// counterclockwise = positive
+// clockwise = negative = 1
+// counterclockwise = positive = 0
 
 // Timer5 Interrupt
 void __ISR(_TIMER_5_VECTOR, IPL5SOFT) Controller(void)
 {
       // motor direction digital output
-      LATBbits.LATB10 = direction;
+      DIGOUTLAT = direction;
       enum Mode opmode = get_mode(); // get current mode
       switch (opmode)
       {
@@ -35,11 +39,11 @@ void __ISR(_TIMER_5_VECTOR, IPL5SOFT) Controller(void)
 }
 
 // Initialize Timer5 for 5kHz ISR / fixed-frequency control loop
-void initTimer5()
-{
+void initTimer5() {
       // RB10 as output to control motor direction
-      TRISBbits.TRISB10 = 0; // set as output
-      LATBbits.LATB10 = 0;   // initial direction FIX
+      ANSELB = 0; // turn off any analog input just in case
+      DIGOUTTRIS = 0; // set as output
+      DIGOUTLAT = 0;   // initial direction
       // Set up interrupt for Timer5
       T5CONbits.ON = 0;    // turn off Timer5
       T5CONbits.TCKPS = 0; // prescaler, N=1
@@ -48,7 +52,7 @@ void initTimer5()
       // Freq = 48MHz / (Prescaler * PR5)
       PR5 = 9599; // PR5 = (48MHz / (Prescaler * 5000Hz)) - 1
       __builtin_disable_interrupts();
-      INTCONbits.INT4EP = 0;         // external interrupt 4, falling edge trigger
+      INTCONbits.INT2EP = 0;         // external interrupt 2, falling edge trigger
       IPC5bits.T5IP = 5;             // priority
       IPC5bits.T5IS = 0;             // subpriority
       IFS0bits.T5IF = 0;             // clear interrupt flag
@@ -59,23 +63,24 @@ void initTimer5()
 
 void initPWMT2OC()
 {
+      OC1CON = 0; // turn off for now
       RPB7R = 0b0101;       // set RPB7 to be OC1
       TRISBbits.TRISB7 = 0; // set as output
       // Use Timer2
-      T2CONbits.ON = 0;    // Turn off timer2
+      T2CONbits.ON = 0;    // Turn off Timer2
       T2CONbits.TCKPS = 0; // Set prescaler, N=1
       // 20 kHz PWM
       PR2 = 2399;             // PR2 = (48MHz / (1 * 20000Hz)) - 1
       TMR2 = 0;               // Initialize count to zero
-      T2CONbits.ON = 1;       // Turn on Timer3
       OC1CONbits.OCM = 0b110; // PWM with no fault pin
-      OC1RS = 0.25 * 2400;    // duty cycle = OC1RS/(PR2+1) = 25%
+      OC1RS = (int)(0.25 * 2400);    // duty cycle = OC1RS/(PR2+1) = 25%
       OC1R = 600;
       OC1CONbits.OCTSEL = 0; // Timer2 is base
+      T2CONbits.ON = 1;       // Turn on Timer2
       OC1CONbits.ON = 1;     // Turn on OC1
 }
 
 void set_duty_cycle(int percent, int inputDir) {
       direction = inputDir;
-      duty_cycle = (float) percent/ 100.0;
+      duty_cycle = (float) percent / 100.0;
 }

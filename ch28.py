@@ -53,7 +53,7 @@ while not has_quit:
     elif (selection == 'e'):
         print(' ')
     elif (selection == 'f'):
-        pwmvalstr = input('\nWhat PWM value would you like [-100 to 100]? ') # duty cycle
+        pwmvalstr = input('What PWM value would you like [-100 to 100]? ') # duty cycle
         pwmval = int(pwmvalstr) # turn into int
         ser.write((str(pwmval)+'\n').encode()) # send the number
         if (pwmval < 0) :
@@ -61,7 +61,7 @@ while not has_quit:
             pwmval = -1*pwmval
         else:
             direction = "counterclockwise"
-        print(f'PWM has been set to {pwmval}% in the ' + direction + ' direction.')
+        print(f'PWM has been set to {pwmval}% in the ' + direction + ' direction.\n')
     elif (selection == 'g'):
         kpcstr = input('\nEnter your desired Kp current gain [recommended: ?]: ')
         kicstr = input('\nEnter your desired Ki current gain [recommended: ?: ')
