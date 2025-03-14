@@ -69,7 +69,7 @@ int main()
             { // read encoder deg
                   int count = read_encoder();
                   float degrees = 360.0 * (count / 1000.0); // calculate degrees, assuming 4x decoupling TO FIX
-                  sprintf(m, "%.1f\r\n", degrees);          // return the number + 1
+                  sprintf(m, "%.1f\r\n", degrees);
                   NU32DIP_WriteUART1(m);
                   break;
             }
@@ -90,6 +90,28 @@ int main()
                         set_duty_cycle(pf,0);
                   }
                   set_mode(PWM); // set new duty cycle
+                  break;
+            }
+            case 'g': { // set current gains
+                  float kpc, kic;
+                  NU32DIP_ReadUART1(buffer, BUF_SIZE);
+                  sscanf(buffer, "%f", &kpc);
+                  NU32DIP_ReadUART1(buffer, BUF_SIZE);
+                  sscanf(buffer, "%f", &kic);
+                  set_cgains(kpc,kic);
+                  break;
+            }
+            case 'h': { // get current gains
+                  float kpc = get_kpc();
+                  float kic = get_kic();
+                  sprintf(m, "%.2f\r\n", kpc);
+                  NU32DIP_WriteUART1(m);
+                  sprintf(m, "%.2f\r\n", kic);
+                  NU32DIP_WriteUART1(m);
+                  break;
+            }
+            case 'k': { // test current control
+                  set_mode(ITEST);
                   break;
             }
             case 'p': // Unpower the motor

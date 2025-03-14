@@ -17,10 +17,28 @@
 #include <sys/attribs.h> // __ISR macro
 
 #include "NU32DIP.h"
+#include "util.h"
+
+// our digital output pins
+#define DIGOUTLAT LATBbits.LATB15
+#define DIGOUTTRIS TRISBbits.TRISB15
+
+// set as volatile
+volatile float duty_cycle = 0.25;
+volatile int direction = 0;
+static volatile int refCurrent[100];
+static volatile int dataCurrent[1000];
+volatile float kpc = 0;
+volatile float kic = 0;
+volatile int count = 0;
 
 // function headers go here
 void initTimer5(); // initialize Timer5
 void initPWMT2OC(); // initialize PWM
 void set_duty_cycle(int percent, int inputDir); // set duty cycle and direction
+void set_cgains(float kp, float ki);
+float get_kpc();
+float get_kic();
+void makeRef();
 
 #endif // CC__H__

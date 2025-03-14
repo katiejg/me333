@@ -62,24 +62,29 @@ while not has_quit:
         else:
             direction = "counterclockwise"
         print(f'PWM has been set to {pwmval}% in the ' + direction + ' direction.\n')
-    elif (selection == 'g'):
+    elif (selection == 'g'): 
         kpcstr = input('\nEnter your desired Kp current gain [recommended: ?]: ')
-        kicstr = input('\nEnter your desired Ki current gain [recommended: ?: ')
-        print(f'Sending Kp = {kpcstr} and Ki = {kicstr} to the current controller.')
+        kpc = float(kpcstr) # turn into float
+        ser.write((str(kpc)+'\n').encode()) # send the number
+        kicstr = input('Enter your desired Ki current gain [recommended: ?]: ')
+        kic = float(kicstr) # turn into float
+        ser.write((str(kic)+'\n').encode()) # send the number
+        print(f'Sending Kp = {kpcstr} and Ki = {kicstr} to the current controller.\n')
     elif (selection == 'h'):
-        print(f'The current controller is using Kp = {kpcstr} and Ki = {kicstr}.\n')
-    elif (selection == 'i'):
+        kpcstr = ser.read_until(b'\n')
+        kpc = float(kpcstr) # turn into float
+        kicstr = ser.read_until(b'\n')
+        kic = float(kicstr) # turn into float
+        print(f'The current controller is using Kp = {kpc} and Ki = {kic}.\n')
+    elif (selection == 'i'): # set position gains
         kppstr = input('\nEnter your desired Kp position gain [recommended: 4.76]: ')
         kipstr = input('\nEnter your desired Ki position gain [recommended: 0.32]: ')
         kdpstr = input('\nEnter your desired Kd position gain [recommended: 10.63]: ')
         print(f'Sending Kp = {kppstr}, Ki = {kipstr}, and Kd = {kdpstr} to the position controller.\n')
-    elif (selection == 'j'): # TO FIX we need to read from the device prob....
+    elif (selection == 'j'): 
         print(f'The position controller is using Kp = {kppstr}, Ki = {kipstr}, and Kd = {kdpstr}.\n')
     elif (selection == 'k'):
-        print('Exiting client')
-        has_quit = True; # exit client
-        # be sure to close the port
-        ser.close()
+        print(' ')
     elif (selection == 'l'):
         mtranglestr = input('\nEnter the desired motor angle in degrees: ')
         print(f'Motor moving to {mtranglestr} degrees.')
@@ -99,7 +104,7 @@ while not has_quit:
         # be sure to close the port
         ser.close()
     elif (selection == 'r'):
-        n_str = ser.read_until(b'\n');  # get the incremented number back
+        n_str = ser.read_until(b'\n') # get the incremented number back
         n_int = int(n_str) # turn it into an int
         print('The PIC32 controller mode is currently ' + str(modes[n_int])+'.\n')
     else:

@@ -1,13 +1,4 @@
 #include "currcontrol.h"
-#include "util.h"
-
-// our digital output pins
-#define DIGOUTLAT LATBbits.LATB15
-#define DIGOUTTRIS TRISBbits.TRISB15
-
-// set as volatile
-volatile float duty_cycle = 0.25;
-volatile int direction = 0;
 
 // clockwise = negative = 1
 // counterclockwise = positive = 0
@@ -30,6 +21,12 @@ void __ISR(_TIMER_5_VECTOR, IPL5SOFT) Controller(void)
       {
             // set duty cycle
             OC1RS = duty_cycle * 2400; // duty cycle = OC1RS/(PR2+1)
+            break;
+      }
+      case ITEST:
+      {
+            makeRef();
+            float current = INA219_read_current();
             break;
       }
       default:
@@ -86,4 +83,25 @@ void initPWMT2OC()
 void set_duty_cycle(int percent, int inputDir) {
       direction = inputDir; // set direction
       duty_cycle = (float) percent / 100.0; // set duty cycle
+}
+
+void set_cgains(float kp, float ki) {
+      kpc = kp;
+      kic = ki;
+}
+
+float get_kpc() { return kpc; }
+
+float get_kic() { return kic; }
+
+void makeRef() {
+      // 200 mA 100 Hz square wave
+      volatile int A = 200;
+      for (int count=0; count < 100; ++count) {
+            if (count % 25 == 0) {
+                  A = -1*A;
+            }
+            refCurrent[count] = A;
+      }
+      set_mode(IDLE);
 }
