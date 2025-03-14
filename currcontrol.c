@@ -1,9 +1,11 @@
 #include "currcontrol.h"
 #include "util.h"
 
+// our digital output pins
 #define DIGOUTLAT LATBbits.LATB15
 #define DIGOUTTRIS TRISBbits.TRISB15
 
+// set as volatile
 volatile float duty_cycle = 0.25;
 volatile int direction = 0;
 
@@ -32,6 +34,7 @@ void __ISR(_TIMER_5_VECTOR, IPL5SOFT) Controller(void)
       }
       default:
       {
+            // not a valid mode
             break;
       }
       }
@@ -81,6 +84,6 @@ void initPWMT2OC()
 }
 
 void set_duty_cycle(int percent, int inputDir) {
-      direction = inputDir;
-      duty_cycle = (float) percent / 100.0;
+      direction = inputDir; // set direction
+      duty_cycle = (float) percent / 100.0; // set duty cycle
 }

@@ -4,7 +4,7 @@
 # python3 -m pip install pyserial
 # sudo apt-get install python3-matplotlib
 
-modes = ["IDLE","PWM","ITEST","HOLD","TRACK"] # helps with printing the mode
+modes = ["IDLE","PWM","ITEST","HOLD","TRACK"] # array to help with printing the mode
 
 import serial
 ser = serial.Serial('COM3',230400)

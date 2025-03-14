@@ -15,6 +15,7 @@
 
 #include "NU32DIP.h"
 
+// define Mode as enumerated
 enum Mode {
       IDLE,
       PWM,

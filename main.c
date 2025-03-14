@@ -5,6 +5,8 @@
 #include "encoder.h"
 #include "currcontrol.h"
 
+// Ch 28 Part 1
+
 #define BUF_SIZE 200
 
 int read_encoder()
@@ -23,6 +25,7 @@ int main()
 {
       char buffer[BUF_SIZE];
       char m[50];
+      // initialize modules or peripherals
       NU32DIP_Startup();
       UART2_Startup();
       INA219_Startup();
@@ -30,20 +33,20 @@ int main()
       NU32DIP_YELLOW = 1;
       set_mode(IDLE);
       __builtin_disable_interrupts();
-      // initialize modules or peripherals here ...
       initTimer5();
       initPWMT2OC();
       __builtin_enable_interrupts();
 
+      // menu loop
       while (1)
       {
-            NU32DIP_ReadUART1(buffer, BUF_SIZE); // next character expect menu command
-            NU32DIP_GREEN = 1;
+            NU32DIP_ReadUART1(buffer, BUF_SIZE); // next character expecting menu command
+            NU32DIP_GREEN = 1; // turn off green LED
             switch (buffer[0])
             {
             case 'a':
             {                                     // read current sensor adc counts
-                  short count = readINA219(0x04); // FIX: double-check this
+                  short count = readINA219(0x04);
                   sprintf(m, "%d\r\n", count);
                   NU32DIP_WriteUART1(m); // send adc count to client
                   break;
@@ -55,7 +58,7 @@ int main()
                   NU32DIP_WriteUART1(m); // send amp count to client
                   break;
             }
-            case 'c':
+            case 'c': // read encoder count
             {
                   int count = read_encoder();
                   sprintf(m, "%d\r\n", count);
@@ -80,12 +83,13 @@ int main()
                   int pf = 0;
                   NU32DIP_ReadUART1(buffer, BUF_SIZE);
                   sscanf(buffer, "%d", &pf);
+                  // determine direction
                   if (pf < 0) { // clockwise
                         set_duty_cycle(-1*pf,1);
                   } else { // counterclockwise
                         set_duty_cycle(pf,0);
                   }
-                  set_mode(PWM);
+                  set_mode(PWM); // set new duty cycle
                   break;
             }
             case 'p': // Unpower the motor
@@ -93,16 +97,16 @@ int main()
                   set_mode(IDLE);
                   break;
             }
-            case 'r':
+            case 'r': // get current mode
             {
                   enum Mode currmode = get_mode();
                   sprintf(m, "%d\r\n", (int)currmode);
-                  NU32DIP_WriteUART1(m);
+                  NU32DIP_WriteUART1(m); // write current mode as enum (python will handle printing)
                   break;
             }
             case 'q':
             {
-                  // hangle q for quit
+                  // handle q for quit
                   set_mode(IDLE);
                   break;
             }

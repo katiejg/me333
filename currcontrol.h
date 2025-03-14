@@ -19,8 +19,8 @@
 #include "NU32DIP.h"
 
 // function headers go here
-void initTimer5();
-void initPWMT2OC();
-void set_duty_cycle(int percent, int inputDir);
+void initTimer5(); // initialize Timer5
+void initPWMT2OC(); // initialize PWM
+void set_duty_cycle(int percent, int inputDir); // set duty cycle and direction
 
 #endif // CC__H__
