@@ -4,7 +4,6 @@
 # python3 -m pip install pyserial
 # sudo apt-get install python3-matplotlib
 
-
 import matplotlib.pyplot as plt 
 from statistics import mean 
 def read_plot_matrix():

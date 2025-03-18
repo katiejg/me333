@@ -6,6 +6,7 @@
 
 modes = ["IDLE","PWM","ITEST","HOLD","TRACK"] # array to help with printing the mode
 
+# open serial and menu
 import serial
 ser = serial.Serial('COM3',230400)
 print('Opening port: ')

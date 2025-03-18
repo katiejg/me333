@@ -22,15 +22,20 @@
 // our digital output pins
 #define DIGOUTLAT LATBbits.LATB15
 #define DIGOUTTRIS TRISBbits.TRISB15
+#define NUMSAMPS 1000 // num of points in waveform
+#define PLOTPTS 200 // num of data points to plot
+#define DECIMATION 10 // plot every 10th point
+#define EINTMAX 9000 // Ki*EINTMAX should be no more than the max control effort
 
 // set as volatile
-volatile float duty_cycle = 0.25;
-volatile int direction = 0;
+static volatile float duty_cycle = 0.25;
+static volatile int direction = 0;
 static volatile int refCurrent[100];
-static volatile int dataCurrent[1000];
-volatile float kpc = 0;
-volatile float kic = 0;
-volatile int count = 0;
+static volatile int dataCurrent[100];
+static volatile int Eint = 0;
+static volatile float kpc = 0, kic = 0;
+static volatile int count = 0;
+static volatile int StoringData = 0; // If this flag = 1, currently storing plot data
 
 // function headers go here
 void initTimer5(); // initialize Timer5
@@ -39,6 +44,6 @@ void set_duty_cycle(int percent, int inputDir); // set duty cycle and direction
 void set_cgains(float kp, float ki);
 float get_kpc();
 float get_kic();
-void makeRef();
+void pi_controller();
 
 #endif // CC__H__

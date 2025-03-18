@@ -5,8 +5,6 @@
 #include "encoder.h"
 #include "currcontrol.h"
 
-// Ch 28 Part 1
-
 #define BUF_SIZE 200
 
 int read_encoder()
@@ -110,8 +108,26 @@ int main()
                   NU32DIP_WriteUART1(m);
                   break;
             }
+            case 'i': { // set position gains
+                  break;
+            }
+            case 'j': { // get position gains
+                  break;
+            }
             case 'k': { // test current control
+                  StoringData = 1; // currently storing data...
                   set_mode(ITEST);
+                  while (StoringData) {
+                        ; // do nothing
+                  }
+                  // send the data back
+                  for (int i=0;i<100;i++) {
+                        sprintf(buffer, "%d %d\r\n", refCurrent[i], dataCurrent[i]);
+                        NU32DIP_WriteUART1(buffer);
+                  }
+                  break;
+            }
+            case 'l': { // go to angle (deg)
                   break;
             }
             case 'p': // Unpower the motor
@@ -122,7 +138,7 @@ int main()
             case 'r': // get current mode
             {
                   enum Mode currmode = get_mode();
-                  sprintf(m, "%d\r\n", (int)currmode);
+                  sprintf(m, "%d\n", (int)currmode);
                   NU32DIP_WriteUART1(m); // write current mode as enum (python will handle printing)
                   break;
             }

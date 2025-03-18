@@ -5,6 +5,11 @@
             "utilities.h": "c",
             "stdio.h": "c",
             "util.h": "c",
-            "currcontrol.h": "c"
+            "currcontrol.h": "c",
+            "random": "c",
+            "algorithm": "c",
+            "iterator": "c",
+            "xmemory": "c",
+            "xutility": "c"
       }
 }

@@ -25,8 +25,19 @@ void __ISR(_TIMER_5_VECTOR, IPL5SOFT) Controller(void)
       }
       case ITEST:
       {
-            makeRef();
-            float current = INA219_read_current();
+            // make reference current
+            static int A = 200;
+            if (count % 25 == 0) {
+                  A = -1*A; // invert
+            }
+            refCurrent[count] = A;
+            pi_controller();
+            count++; // increment counter
+            if (count >= 99) {
+                  count = 0;
+                  StoringData = 0;
+                  set_mode(IDLE); // current loop test is over
+            }
             break;
       }
       default:
@@ -86,6 +97,7 @@ void set_duty_cycle(int percent, int inputDir) {
 }
 
 void set_cgains(float kp, float ki) {
+      Eint = 0;
       kpc = kp;
       kic = ki;
 }
@@ -94,14 +106,36 @@ float get_kpc() { return kpc; }
 
 float get_kic() { return kic; }
 
-void makeRef() {
-      // 200 mA 100 Hz square wave
-      volatile int A = 200;
-      for (int count=0; count < 100; ++count) {
-            if (count % 25 == 0) {
-                  A = -1*A;
-            }
-            refCurrent[count] = A;
+void pi_controller() {
+      static int eprev = 0;
+      float s = INA219_read_current();
+      dataCurrent[count] = s;
+      int r = refCurrent[count];
+      float e = r - s; // calculate the error
+      float edot = e - eprev; // error difference
+      Eint = Eint + e; // error sum
+      // integrator anti-windup
+      if (Eint > EINTMAX) {
+            Eint = EINTMAX;
+      } else if (Eint < -EINTMAX) {
+            Eint = -EINTMAX;
       }
-      set_mode(IDLE);
+      float u = kpc*e + kic*Eint;
+      eprev = e;
+
+      // center u at 50, saturate at the ends
+      float unew = u + 50.0;
+      if (unew > 100.0) {
+            unew = 100.0;
+      } else if (unew < 0.0) {
+            unew = 0.0;
+      }
+
+      // determine direction bit and set new duty cycle
+      if (u < 0) { // clockwise
+            set_duty_cycle(unew,1);
+      } else { // counterclockwise
+            set_duty_cycle(unew,0);
+      }
+
 }
