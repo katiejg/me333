@@ -10,7 +10,14 @@
 #include <sys/attribs.h> // __ISR macro
 
 #include "NU32DIP.h"
+#include "util.h"
+
+static volatile float kpp = 0, kip = 0, kdp = 0;
 
 // function headers go here
+void set_pgains(float kp, float ki, float kd);
+float get_kpp();
+float get_kip();
+float get_kdp();
 
 #endif // PC__H__
