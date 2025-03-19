@@ -99,9 +99,9 @@ int main() {
 			case 'h': {	 // get current gains
 				float kpctemp = get_kpc();
 				float kictemp = get_kic();
-				sprintf(m, "%.2f\r\n", kpctemp);
+				sprintf(m, "%f\r\n", kpctemp);
 				NU32DIP_WriteUART1(m);
-				sprintf(m, "%.2f\r\n", kictemp);
+				sprintf(m, "%f\r\n", kictemp);
 				NU32DIP_WriteUART1(m);
 				break;
 			}
@@ -120,11 +120,11 @@ int main() {
 				float kpptemp = get_kpp();
 				float kiptemp = get_kip();
 				float kdptemp = get_kdp();
-				sprintf(m, "%.2f\r\n", kpptemp);
+				sprintf(m, "%.3f\r\n", kpptemp);
 				NU32DIP_WriteUART1(m);
-				sprintf(m, "%.2f\r\n", kiptemp);
+				sprintf(m, "%.3f\r\n", kiptemp);
 				NU32DIP_WriteUART1(m);
-				sprintf(m, "%.2f\r\n", kdptemp);
+				sprintf(m, "%.3f\r\n", kdptemp);
 				NU32DIP_WriteUART1(m);
 				break;
 			}
@@ -142,7 +142,7 @@ int main() {
 				}
 				// send the data back
 				for (int i = 0; i < COUNTMAX; i++) {
-					sprintf(m, "%.2f %.2f\r\n", refCurrent[i], dataCurrent[i]);
+					sprintf(m, "%.2f %.2f\r\n", get_ref(i), get_actual(i));
 					NU32DIP_WriteUART1(m);
 				}
 				break;

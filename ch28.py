@@ -105,10 +105,10 @@ while not has_quit:
             f'PWM has been set to {pwmval}% in the ' + direction + ' direction.\n')
     elif (selection == 'g'):
         kpcstr = input(
-            '\nEnter your desired Kp current gain [recommended: ?]: ')
+            '\nEnter your desired Kp current gain [recommended: 0.15]: ')
         kpc = float(kpcstr)  # turn into float
         ser.write((str(kpc)+'\n').encode())  # send the number
-        kicstr = input('Enter your desired Ki current gain [recommended: ?]: ')
+        kicstr = input('Enter your desired Ki current gain [recommended: 0.01]: ')
         kic = float(kicstr)  # turn into float
         ser.write((str(kic)+'\n').encode())  # send the number
         print(

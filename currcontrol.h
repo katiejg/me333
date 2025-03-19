@@ -42,6 +42,8 @@ static volatile float kpc = 0, kic = 0;
 void initTimer5();								 // initialize Timer5
 void initPWMT2OC();								 // initialize PWM
 void set_duty_cycle(int percent, int inputDir);	 // set duty cycle and direction
+float get_ref(int index);
+float get_actual(int index);
 void set_cgains(float kp, float ki);
 float get_kpc();
 float get_kic();

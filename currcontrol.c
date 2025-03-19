@@ -30,8 +30,9 @@ void __ISR(_TIMER_5_VECTOR, IPL5SOFT) T5Controller(void) {
 
 			// create the reference square wave
 			if (counter % 25 == 0) { // switches signs every 25th count (making it a 100Hz sq wave)
-				ampl = -200;
+				ampl = -1*ampl;
 			}
+		
 			refCurrent[counter] = ampl; // save in refCurrent
 
 			// PI Controller
@@ -73,6 +74,7 @@ void __ISR(_TIMER_5_VECTOR, IPL5SOFT) T5Controller(void) {
 			
 			// turn on PWM
                   OC1RS = duty_cycle * 2400;	// duty cycle = OC1RS/(PR2+1)
+
 			counter++;
 			// if finished graphing
 			if (counter > COUNTMAX) {
@@ -131,6 +133,13 @@ void initPWMT2OC() {
 	OC1CONbits.OCTSEL = 0;	// Timer2 is base
 	T2CONbits.ON = 1;		// Turn on Timer2
 	OC1CONbits.ON = 1;		// Turn on OC1
+}
+
+float get_ref(int index) {
+	return refCurrent[index];
+}
+float get_actual(int index) {
+	return dataCurrent[index];
 }
 
 void set_duty_cycle(int percent, int inputDir) {
