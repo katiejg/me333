@@ -19,26 +19,24 @@
 #include <xc.h>			  // processor SFR definitions
 
 #include "NU32DIP.h"
-#include "ina219.h"
 #include "util.h"
+#include "ina219.h"
 
 // our digital output pins
 #define DIGOUTLAT LATBbits.LATB15
 #define DIGOUTTRIS TRISBbits.TRISB15
-#define NUMSAMPS 500  // num of points in waveform
-#define PLOTPTS 100	   // num of data points to plot
-#define DECIMATION 5   // plot every DECIMATION point
+#define COUNTMAX 99  // num of points
 #define EINTMAX 1000  // Ki*EINTMAX should be no more than the max control effort
+
+extern volatile int StoringData; // If this flag = 1, currently storing plot data
 
 // set as volatile
 static volatile float duty_cycle = 0;
 static volatile int direction = 0;
-static volatile int Waveform[NUMSAMPS]; // waveform
-static volatile int refCurrent[PLOTPTS];
-static volatile int dataCurrent[PLOTPTS];
-static volatile int Eint = 0;
+static volatile float refCurrent[COUNTMAX];
+static volatile float dataCurrent[COUNTMAX];
+static volatile float Eint = 0;
 static volatile float kpc = 0, kic = 0;
-static volatile int StoringData = 0; // If this flag = 1, currently storing plot data
 
 // function headers go here
 void initTimer5();								 // initialize Timer5
@@ -47,6 +45,5 @@ void set_duty_cycle(int percent, int inputDir);	 // set duty cycle and direction
 void set_cgains(float kp, float ki);
 float get_kpc();
 float get_kic();
-void make_waveform();
 
 #endif	// CC__H__

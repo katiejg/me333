@@ -10,6 +10,7 @@
             "algorithm": "c",
             "iterator": "c",
             "xmemory": "c",
-            "xutility": "c"
+            "xutility": "c",
+            "poscontrol.h": "c"
       }
 }

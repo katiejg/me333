@@ -1,9 +1,10 @@
 #include <stdio.h>
 
 #include "currcontrol.h"
-#include "poscontrol.h"
 #include "encoder.h"
+#include "ina219.h"
 #include "nu32dip.h"
+#include "poscontrol.h"
 #include "util.h"
 
 #define BUF_SIZE 200
@@ -24,16 +25,15 @@ int main() {
 	char m[50];
 	// initialize modules or peripherals
 	NU32DIP_Startup();
-	UART2_Startup();
-	INA219_Startup();
 	NU32DIP_GREEN = 1;	// turn off the LEDs
 	NU32DIP_YELLOW = 1;
 	set_mode(IDLE);
 	__builtin_disable_interrupts();
+	UART2_Startup();
+	INA219_Startup();
 	initTimer5();
 	initPWMT2OC();
-      initTimer4();
-      make_waveform();
+	initTimer4();
 	__builtin_enable_interrupts();
 
 	// menu loop
@@ -50,7 +50,7 @@ int main() {
 			}
 			case 'b': {	 // read current sensor mA
 				float current = INA219_read_current();
-				sprintf(m, "%.1f\r\n", current);
+				sprintf(m, "%.2f\r\n", current);
 				NU32DIP_WriteUART1(m);	// send amp count to client
 				break;
 			}
@@ -106,49 +106,49 @@ int main() {
 				break;
 			}
 			case 'i': {	 // set position gains
-                        float kpptemp, kiptemp, kdptemp;
+				float kpptemp, kiptemp, kdptemp;
 				NU32DIP_ReadUART1(buffer, BUF_SIZE);
 				sscanf(buffer, "%f", &kpptemp);
 				NU32DIP_ReadUART1(buffer, BUF_SIZE);
 				sscanf(buffer, "%f", &kiptemp);
-                        NU32DIP_ReadUART1(buffer, BUF_SIZE);
+				NU32DIP_ReadUART1(buffer, BUF_SIZE);
 				sscanf(buffer, "%f", &kdptemp);
 				set_pgains(kpptemp, kiptemp, kdptemp);
 				break;
 			}
 			case 'j': {	 // get position gains
-                        float kpptemp = get_kpp();
+				float kpptemp = get_kpp();
 				float kiptemp = get_kip();
 				float kdptemp = get_kdp();
 				sprintf(m, "%.2f\r\n", kpptemp);
 				NU32DIP_WriteUART1(m);
 				sprintf(m, "%.2f\r\n", kiptemp);
 				NU32DIP_WriteUART1(m);
-                        sprintf(m, "%.2f\r\n", kdptemp);
+				sprintf(m, "%.2f\r\n", kdptemp);
 				NU32DIP_WriteUART1(m);
 				break;
 			}
-			case 'k': { // test current control
-                        set_mode(ITEST);
-                        sprintf(m, "%d\n", PLOTPTS);
-                        NU32DIP_WriteUART1(m);
+			case 'k': {	 // test current control
+				sprintf(m, "%d\r\n", COUNTMAX);
+				NU32DIP_WriteUART1(m);
 				__builtin_disable_interrupts();	 // keep ISR disabled as briefly
 												 // as possible
-				Eint = 0;	  // integral of the control error
+				Eint = 0;  // integral of the control error
 				__builtin_enable_interrupts();
-                        set_mode(ITEST);
 				StoringData = 1;  // currently storing data...
+				set_mode(ITEST);
 				while (StoringData) {
 					;  // do nothing
 				}
 				// send the data back
-				for (int i = 0; i < PLOTPTS; i++) {
-					sprintf(m, "%d %d\n", refCurrent[i], dataCurrent[i]);
+				for (int i = 0; i < COUNTMAX; i++) {
+					sprintf(m, "%.2f %.2f\r\n", refCurrent[i], dataCurrent[i]);
 					NU32DIP_WriteUART1(m);
 				}
 				break;
 			}
 			case 'l': {	 // go to angle (deg)
+				set_mode(HOLD);
 				break;
 			}
 			case 'p':  // Unpower the motor

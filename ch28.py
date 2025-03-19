@@ -148,7 +148,9 @@ while not has_quit:
         print(' ')
     elif (selection == 'l'):
         mtranglestr = input('\nEnter the desired motor angle in degrees: ')
-        print(f'Motor moving to {mtranglestr} degrees.')
+        mtrangle = int(mtranglestr)
+        ser.write((str(mtrangle)+'\n').encode())  # send the number
+        print(f'Motor moving to {mtrangle} degrees.')
     elif (selection == 'm'):
         steptrajstr = input(
             '\nEnter step trajectory, in sec and degrees [time1, ang1: time2, ang2; ...]:\n\t')

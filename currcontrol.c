@@ -3,6 +3,8 @@
 // clockwise = negative = 1
 // counterclockwise = positive = 0
 
+volatile int StoringData = 0; // define initial value for Storing Data
+
 // Timer5 Interrupt
 void __ISR(_TIMER_5_VECTOR, IPL5SOFT) T5Controller(void) {
 	// motor direction digital output
@@ -21,18 +23,27 @@ void __ISR(_TIMER_5_VECTOR, IPL5SOFT) T5Controller(void) {
 			break;
 		}
 		case ITEST: {
+			INA219_Startup();
+			char m[50]; // for debugging
 			static int counter = 0;	 // initialize counter once
-			static int plotind = 0;	 // index for data arrays
-			static int decctr = 0;	// counts to store data one every decimation
-			static int ival = 0;
+			static volatile int ampl = 200; // amplitude of the reference square wave
+
+			// create the reference square wave
+			if (counter % 25 == 0) { // switches signs every 25th count (making it a 100Hz sq wave)
+				ampl = -200;
+			}
+			refCurrent[counter] = ampl; // save in refCurrent
 
 			// PI Controller
-			ival = INA219_read_current();  // read current value
-			static int eprev = 0;
-			int s = ival;
-			int r = Waveform[counter];
-			int e = r - s;		 // calculate the error
-			int edot = e - eprev;	 // error difference
+			float ival = INA219_read_current();
+			// sprintf(m, "we're okay %.2f\r\n", ival);
+			// NU32DIP_WriteUART1(m);
+			dataCurrent[counter] = ival;  // read current value, save in dataCurrent
+			static float eprev = 0;
+			float s = dataCurrent[counter];
+			float r = refCurrent[counter];
+			float e = r - s;		 // calculate the error
+			float edot = e - eprev;	 // error difference
 			Eint = Eint + e;		 // error sum
 			// integrator anti-windup
 			if (Eint > EINTMAX) {
@@ -40,46 +51,35 @@ void __ISR(_TIMER_5_VECTOR, IPL5SOFT) T5Controller(void) {
 			} else if (Eint < -EINTMAX) {
 				Eint = -EINTMAX;
 			}
-			float u = (kpc * e) + (kic * Eint);
-			eprev = e;
+			// get gains
+			float kpgain = get_kpc();
+			float kigain = get_kic();
+			float u = (kpgain * e) + (kigain * Eint); // calculate u
+			eprev = e; // set current e as previous e for next iteration
 
-			// center u at 50, saturate at the ends
-			float unew = u + 50.0;
-			if (unew > 100.0) {
-				unew = 100.0;
-			} else if (unew < 0.0) {
-				unew = 0.0;
+			// center u at 0, saturate at the ends to ensure it is a possible duty cycle
+			if (u > 100.0) {
+				u = 100.0;
+			} else if (u < -100.0) {
+				u = -100.0;
 			}
 
 			// determine direction bit and set new duty cycle
 			if (u < 0) {  // clockwise
-				set_duty_cycle(unew, 1);
+				set_duty_cycle(-1*u, 1);
 			} else {  // counterclockwise
-				set_duty_cycle(unew, 0);
+				set_duty_cycle(u, 0);
 			}
-
+			
+			// turn on PWM
                   OC1RS = duty_cycle * 2400;	// duty cycle = OC1RS/(PR2+1)
-
-			if (StoringData) {
-				decctr++;
-				if (decctr == DECIMATION) {
-					decctr = 0; // reset
-					dataCurrent[plotind] = ival;  // store data
-					refCurrent[plotind] = Waveform[counter];
-					plotind++;	// increment plot data index
-				}
-				if (plotind == PLOTPTS) {
-					plotind = 0;
-					StoringData = 0;
-				}
-			}
-
 			counter++;
-			if (counter == NUMSAMPS) {
-				counter = 0;	 // rollover
-				set_mode(IDLE);	 // FIX
+			// if finished graphing
+			if (counter > COUNTMAX) {
+				StoringData = 0; // reset
+				counter = 0; // reset
+				set_mode(IDLE); // set mode to IDLE
 			}
-
 			break;
 		}
 		case HOLD: {
@@ -107,7 +107,6 @@ void initTimer5() {
 	// Freq = 48MHz / (Prescaler * PR5)
 	PR5 = 9599;	 // PR5 = (48MHz / (Prescaler * 5000Hz)) - 1
 	__builtin_disable_interrupts();
-	INTCONbits.INT2EP = 0;	// external interrupt 2, falling edge trigger
 	IPC5bits.T5IP = 5;		// priority
 	IPC5bits.T5IS = 0;		// subpriority
 	IFS0bits.T5IF = 0;		// clear interrupt flag
@@ -149,13 +148,3 @@ float get_kpc() { return kpc; }
 
 float get_kic() { return kic; }
 
-void make_waveform() {
-	int i = 0, A = 200;	 // square wave, center is 0
-	for (i = 0; i < NUMSAMPS; ++i) {
-		if (i < NUMSAMPS / 2) {
-			Waveform[i] = A;
-		} else {
-			Waveform[i] = -1 * A;
-		}
-	}
-}

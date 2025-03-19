@@ -3,14 +3,11 @@
 // Timer4 Interrupt
 void __ISR(_TIMER_4_VECTOR, IPL5SOFT) T4Controller(void) {
 	enum Mode opmode = get_mode();	// get current mode
-	switch (opmode) {
-		case HOLD: {
-			break;
-		}
-		default: {
-			// not a valid mode
-			break;
-		}
+	// ensure it is in hold
+	if (opmode == HOLD) {
+		// read encoder
+		// compare actual angle to desired angle
+		// calculate ref current using PID control gains
 	}
 	IFS0bits.T4IF = 0;	// clear interrupt flag
 }

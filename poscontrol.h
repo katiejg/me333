@@ -15,6 +15,7 @@
 static volatile float kpp = 0, kip = 0, kdp = 0;
 
 // function headers go here
+void initTimer4();
 void set_pgains(float kp, float ki, float kd);
 float get_kpp();
 float get_kip();
