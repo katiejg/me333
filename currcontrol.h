@@ -26,7 +26,7 @@
 #define DIGOUTLAT LATBbits.LATB15
 #define DIGOUTTRIS TRISBbits.TRISB15
 #define COUNTMAX 99  // num of points
-#define EINTMAX 1000  // Ki*EINTMAX should be no more than the max control effort
+#define EINTMAX 2000  // Ki*EINTMAX should be no more than the max control effort
 
 extern volatile int StoringData; // If this flag = 1, currently storing plot data
 
@@ -42,6 +42,8 @@ static volatile float kpc = 0, kic = 0;
 void initTimer5();								 // initialize Timer5
 void initPWMT2OC();								 // initialize PWM
 void set_duty_cycle(int percent, int inputDir);	 // set duty cycle and direction
+void pi_controller(int counter);
+void set_holdCurrent(float hc);
 float get_ref(int index);
 float get_actual(int index);
 void set_cgains(float kp, float ki);

@@ -9,17 +9,6 @@
 
 #define BUF_SIZE 200
 
-int read_encoder() {
-	WriteUART2(
-		"a");  // 'a' print back encoder count as an integer with a newline
-	while (!get_encoder_flag()) {
-		;
-	}  // wait for get_encoder_flag to return 1
-	set_encoder_flag(0);  // clear flag
-	int p = get_encoder_count();
-	return p;
-}
-
 int main() {
 	char buffer[BUF_SIZE];
 	char m[50];
@@ -65,7 +54,7 @@ int main() {
 				int count = read_encoder();
 				float degrees =
 					360.0 * (count / 1000.0);  // calculate degrees, assuming 4x
-											   // decoupling TO FIX
+											   // decoupling
 				sprintf(m, "%.1f\r\n", degrees);
 				NU32DIP_WriteUART1(m);
 				break;
@@ -148,11 +137,56 @@ int main() {
 				break;
 			}
 			case 'l': {	 // go to angle (deg)
+				float desiredAngle;
+				NU32DIP_ReadUART1(buffer, BUF_SIZE);
+				sscanf(buffer, "%f", &desiredAngle);
+				set_angle(desiredAngle);
 				set_mode(HOLD);
 				break;
 			}
-			case 'p':  // Unpower the motor
-			{
+			case 'm': {	 // load step trajectory
+				int num_samples;
+				NU32DIP_ReadUART1(buffer, BUF_SIZE);
+				sscanf(buffer, "%d", &num_samples);
+				set_numtraj(num_samples);
+				int traj[num_samples - 1];
+				for (int i=0; i<num_samples; i++) {
+					NU32DIP_ReadUART1(buffer, BUF_SIZE);
+					sscanf(buffer, "%f", &(traj[i]));
+					set_reftraj(i, traj[i]);
+				}
+				break;
+			}
+			case 'n': { // load cubic trajectory
+				int num_samples;
+				NU32DIP_ReadUART1(buffer, BUF_SIZE);
+				sscanf(buffer, "%f", &num_samples);
+				set_numtraj(num_samples);
+				int traj[num_samples];
+				for (int i=0; i<num_samples; i++) {
+					NU32DIP_ReadUART1(buffer, BUF_SIZE);
+					sscanf(buffer, "%f", &(traj[i]));
+					set_reftraj(i, traj[i]);
+				}
+				break;
+			}
+			case 'o': { // execute trajectory
+				int num = get_numtraj();
+				sprintf(m, "%d\r\n", num);
+				NU32DIP_WriteUART1(m);
+				StoringData = 1;
+				set_mode(TRACK);
+				while (StoringData) {
+					;  // do nothing
+				}
+				// send the data back
+				for (int i = 0; i < get_numtraj(); i++) {
+					sprintf(m, "%.2f %.2f\r\n", get_reftraj(i), get_acttraj(i));
+					NU32DIP_WriteUART1(m);
+				}
+				break;
+			}
+			case 'p': {	 // Unpower the motor
 				set_mode(IDLE);
 				break;
 			}

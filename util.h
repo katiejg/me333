@@ -28,5 +28,6 @@ static volatile enum Mode currentMode; // holds the current mode
 
 void set_mode(enum Mode setting);
 enum Mode get_mode();
+int read_encoder();
 
 #endif // UTIL__H__

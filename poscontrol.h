@@ -11,11 +11,23 @@
 
 #include "NU32DIP.h"
 #include "util.h"
+#include "currcontrol.h"
+
+#define PEINTMAX 1000
 
 static volatile float kpp = 0, kip = 0, kdp = 0;
+static volatile float refTraj[200];
+static volatile float actTraj[200];
 
 // function headers go here
 void initTimer4();
+void pid_controller(float stept);
+void set_angle(float angledeg);
+void set_numtraj(int n);
+int get_numtraj();
+void set_reftraj(int n, float val);
+float get_reftraj(int n);
+float get_acttraj(int n);
 void set_pgains(float kp, float ki, float kd);
 float get_kpp();
 float get_kip();

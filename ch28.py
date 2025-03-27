@@ -145,22 +145,30 @@ while not has_quit:
             f'The position controller is using Kp = {kpp}, Ki = {kip}, and Kd = {kdp}.\n')
     elif (selection == 'k'):
         read_plot_matrix()
-        print(' ')
     elif (selection == 'l'):
         mtranglestr = input('\nEnter the desired motor angle in degrees: ')
-        mtrangle = int(mtranglestr)
+        mtrangle = float(mtranglestr)
         ser.write((str(mtrangle)+'\n').encode())  # send the number
         print(f'Motor moving to {mtrangle} degrees.')
-    elif (selection == 'm'):
-        steptrajstr = input(
-            '\nEnter step trajectory, in sec and degrees [time1, ang1: time2, ang2; ...]:\n\t')
-    elif (selection == 'n'):
-        cubictrajstr = input(
-            '\nEnter cubic trajectory, in sec and degrees [time1, ang1: time2, ang2; ...]:\n\t')
-        print('Plotting the desired trajectoryand sending to PIC32 ... ')
-        print('completed.')
+    elif (selection == 'm'): # load step traj
+        trajlist = genRef('step')
+        ser.write((str(len(trajlist))+'\n').encode())  # send the length
+        for i in range(len(trajlist)): 
+            ser.write((str(trajlist[i])+'\n').encode())  # send the number
+        # steptrajstr = input(
+        #     '\nEnter step trajectory, in sec and degrees [time1, ang1: time2, ang2; ...]:\n\t')
+        # ser.write((str(mtrangle)+'\n').encode())
+    elif (selection == 'n'): # load cubic traj
+        trajlist = genRef('cubic')
+        ser.write((str(len(trajlist))+'\n').encode())  # send the length
+        for i in range(len(trajlist)): 
+            ser.write((str(trajlist[i])+'\n').encode())  # send the number
+        # cubictrajstr = input(
+        #     '\nEnter cubic trajectory, in sec and degrees [time1, ang1: time2, ang2; ...]:\n\t')
+        # print('Plotting the desired trajectory and sending to PIC32 ... ')
+        # print('completed.')
     elif (selection == 'o'):
-        print('Exiting client')
+        read_plot_matrix()
     elif (selection == 'p'):  # Switch to IDLE mode
         print('Switching to IDLE mode\n')
     elif (selection == 'q'):

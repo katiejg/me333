@@ -3,7 +3,8 @@
 // clockwise = negative = 1
 // counterclockwise = positive = 0
 
-volatile int StoringData = 0; // define initial value for Storing Data
+volatile int StoringData = 0;  // define initial value for Storing Data
+static volatile float holdCurrent = 0;
 
 // Timer5 Interrupt
 void __ISR(_TIMER_5_VECTOR, IPL5SOFT) T5Controller(void) {
@@ -24,67 +25,58 @@ void __ISR(_TIMER_5_VECTOR, IPL5SOFT) T5Controller(void) {
 		}
 		case ITEST: {
 			INA219_Startup();
-			char m[50]; // for debugging
+			char m[50];				 // for debugging
 			static int counter = 0;	 // initialize counter once
-			static volatile int ampl = 200; // amplitude of the reference square wave
+			static volatile int ampl = 200;  // amplitude of the reference square wave
 
 			// create the reference square wave
-			if (counter % 25 == 0) { // switches signs every 25th count (making it a 100Hz sq wave)
-				ampl = -1*ampl;
+			if (counter % 25 == 0) {  // switches signs every 25th count (making
+									  // it a 100Hz sq wave)
+				ampl = -1 * ampl;
 			}
-		
-			refCurrent[counter] = ampl; // save in refCurrent
+			refCurrent[counter] = ampl;	 // save in refCurrent
 
 			// PI Controller
-			float ival = INA219_read_current();
-			// sprintf(m, "we're okay %.2f\r\n", ival);
-			// NU32DIP_WriteUART1(m);
-			dataCurrent[counter] = ival;  // read current value, save in dataCurrent
-			static float eprev = 0;
-			float s = dataCurrent[counter];
-			float r = refCurrent[counter];
-			float e = r - s;		 // calculate the error
-			float edot = e - eprev;	 // error difference
-			Eint = Eint + e;		 // error sum
-			// integrator anti-windup
-			if (Eint > EINTMAX) {
-				Eint = EINTMAX;
-			} else if (Eint < -EINTMAX) {
-				Eint = -EINTMAX;
-			}
-			// get gains
-			float kpgain = get_kpc();
-			float kigain = get_kic();
-			float u = (kpgain * e) + (kigain * Eint); // calculate u
-			eprev = e; // set current e as previous e for next iteration
-
-			// center u at 0, saturate at the ends to ensure it is a possible duty cycle
-			if (u > 100.0) {
-				u = 100.0;
-			} else if (u < -100.0) {
-				u = -100.0;
-			}
-
-			// determine direction bit and set new duty cycle
-			if (u < 0) {  // clockwise
-				set_duty_cycle(-1*u, 1);
-			} else {  // counterclockwise
-				set_duty_cycle(u, 0);
-			}
-			
+			pi_controller(counter);
 			// turn on PWM
-                  OC1RS = duty_cycle * 2400;	// duty cycle = OC1RS/(PR2+1)
+			OC1RS = duty_cycle * 2400;	// duty cycle = OC1RS/(PR2+1)
 
 			counter++;
 			// if finished graphing
 			if (counter > COUNTMAX) {
-				StoringData = 0; // reset
-				counter = 0; // reset
-				set_mode(IDLE); // set mode to IDLE
+				StoringData = 0;  // reset
+				counter = 0;	  // reset
+				set_mode(IDLE);	  // set mode to IDLE
 			}
 			break;
 		}
 		case HOLD: {
+			static int counter = 0; // reset counter
+			refCurrent[counter] = holdCurrent; // save in refCurrent
+			pi_controller(counter);
+			// turn on PWM
+			OC1RS = duty_cycle * 2400;	// duty cycle = OC1RS/(PR2+1)
+			counter++;
+			// if (counter > 1000) {
+			//  	StoringData = 0;  // reset
+			//  	counter = 0;	  // reset
+			//  	set_mode(IDLE);	  // set mode to IDLE
+			// }
+			break;
+		}
+		case TRACK: {
+			// should be the same as HOLD
+			static int counter = 0; // reset counter
+			refCurrent[counter] = holdCurrent; // save in refCurrent
+			pi_controller(counter);
+			// turn on PWM
+			OC1RS = duty_cycle * 2400;	// duty cycle = OC1RS/(PR2+1)
+			counter++;
+			// if (counter > 1000) {
+			//  	StoringData = 0;  // reset
+			//  	counter = 0;	  // reset
+			//  	set_mode(IDLE);	  // set mode to IDLE
+			// }
 			break;
 		}
 		default: {
@@ -109,10 +101,10 @@ void initTimer5() {
 	// Freq = 48MHz / (Prescaler * PR5)
 	PR5 = 9599;	 // PR5 = (48MHz / (Prescaler * 5000Hz)) - 1
 	__builtin_disable_interrupts();
-	IPC5bits.T5IP = 5;		// priority
-	IPC5bits.T5IS = 0;		// subpriority
-	IFS0bits.T5IF = 0;		// clear interrupt flag
-	IEC0bits.T5IE = 1;		// enable
+	IPC5bits.T5IP = 5;				// priority
+	IPC5bits.T5IS = 0;				// subpriority
+	IFS0bits.T5IF = 0;				// clear interrupt flag
+	IEC0bits.T5IE = 1;				// enable
 	__builtin_enable_interrupts();	// enable interrupts
 	T5CONbits.ON = 1;				// turn on Timer5
 }
@@ -135,12 +127,48 @@ void initPWMT2OC() {
 	OC1CONbits.ON = 1;		// Turn on OC1
 }
 
-float get_ref(int index) {
-	return refCurrent[index];
+void pi_controller(int counter) {
+	float ival = INA219_read_current();
+	// sprintf(m, "we're okay %.2f\r\n", ival);
+	// NU32DIP_WriteUART1(m);
+	dataCurrent[counter] = ival;  // read current value, save in dataCurrent
+	static float eprev = 0;
+	float s = dataCurrent[counter];
+	float r = refCurrent[counter];
+	float e = r - s;		 // calculate the error
+	float edot = e - eprev;	 // error difference
+	Eint = Eint + e;		 // error sum
+	// integrator anti-windup
+	if (Eint > EINTMAX) {
+		Eint = EINTMAX;
+	} else if (Eint < -EINTMAX) {
+		Eint = -EINTMAX;
+	}
+	// get gains
+	float kpgain = get_kpc();
+	float kigain = get_kic();
+	float u = (kpgain * e) + (kigain * Eint);  // calculate u
+	eprev = e;	// set current e as previous e for next iteration
+
+	// saturate at the ends to ensure it is a possible duty cycle
+	if (u > 100.0) {
+		u = 100.0;
+	} else if (u < -100.0) {
+		u = -100.0;
+	}
+
+	// determine direction bit and set new duty cycle
+	if (u < 0) {  // clockwise
+		set_duty_cycle(-1 * u, 1);
+	} else {  // counterclockwise
+		set_duty_cycle(u, 0);
+	}
 }
-float get_actual(int index) {
-	return dataCurrent[index];
-}
+
+float get_ref(int index) { return refCurrent[index]; }
+float get_actual(int index) { return dataCurrent[index]; }
+
+void set_holdCurrent(float hc) { holdCurrent = hc; }
 
 void set_duty_cycle(int percent, int inputDir) {
 	direction = inputDir;				  // set direction
@@ -156,4 +184,3 @@ void set_cgains(float kp, float ki) {
 float get_kpc() { return kpc; }
 
 float get_kic() { return kic; }
-

@@ -9,7 +9,7 @@ def genRef(method):
         print('Not a valid method')
         return [-1]
 
-    reflist = [0,0,1,90,2,45,3,45] # default refs
+    reflist = [0,0,1,90,2,45,3,45] # defualt refs
     
     refs_str = input('Enter times and angles, starting at t=0 (ex: 0 0 1 90 2 90 3 0): ')
     reflist = list(map(float,refs_str.split()))
